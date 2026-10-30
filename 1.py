@@ -1,9 +1,9 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QVBoxLayout, QMainWindow
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QMainWindow
 
 
 class BaseWindow(QMainWindow):
-    def __init__(self, title='Расписание'):
+    def __init__(self):
         super().__init__()
         self.resize(1000, 1000)
         self.setWindowTitle('Расписание')
@@ -11,11 +11,8 @@ class BaseWindow(QMainWindow):
         self.setCentralWidget(central)
         self.layout = QVBoxLayout(central)
         self.schedule_button = QPushButton('Расписание')
-        self.schedule_button.move(50, 100)
         self.scores_button = QPushButton('Оценки')
-        self.scores_button.move(150, 100)
         self.homework_button = QPushButton('Домашнее задание')
-        self.homework_button.move(250, 100)
         self.schedule_button.clicked.connect(self.open_schedule)
         self.scores_button.clicked.connect(self.open_scores)
         self.homework_button.clicked.connect(self.open_homework)
@@ -23,7 +20,6 @@ class BaseWindow(QMainWindow):
         self.layout.addWidget(self.scores_button)
         self.layout.addWidget(self.homework_button)
         
-
     def open_schedule(self):
         self.open_windows(Schedule)
 
@@ -37,6 +33,7 @@ class BaseWindow(QMainWindow):
         self.next_window = window_class(self)
         self.next_window.show()
         self.close()
+
 
 class SubWindow(QMainWindow):
     def __init__(self, parent_menu, title):
