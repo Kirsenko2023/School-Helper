@@ -68,9 +68,6 @@ class Homework(SubWindow):
         super().__init__(parent_menu, 'Домашнее задание')
     
 
-
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = BaseWindow()
