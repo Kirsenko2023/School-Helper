@@ -1,13 +1,266 @@
+import os
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QTableWidgetItem, 
-                             QHeaderView, QAbstractItemView, QDialog)
+import sqlite3
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDialog, QMessageBox, QTableWidget
+from PyQt6.QtCore import Qt
+from PyQt6 import uic
 from ui_main_menu import Ui_MainWindow as Ui_MainMenu
 from ui_schedule import Ui_MainWindow as Ui_Schedule
-from ui_scores import Ui_MainWindow as Ui_Scores
 from ui_homework import Ui_MainWindow as Ui_Homework
 from ui_reports import Ui_MainWindow as Ui_Reports
 from ui_settings import Ui_MainWindow as Ui_Settings
-from ui_add_lesson import Ui_Form as Ui_AddLesson 
+from ui_add_lesson import Ui_Form as Ui_AddLesson
+
+
+baze = 'grades.db'
+ui_gr = 'grades_window.ui'
+allowed = {'full_name', 'subject', 'grade_date', 'grade'}
+days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+
+
+def create_database():
+    conn = sqlite3.connect(baze)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS grades (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_name TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            grade_date TEXT NOT NULL,
+            grade INTEGER NOT NULL
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS schedule (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            day TEXT NOT NULL,
+            lesson_num INTEGER NOT NULL,
+            subject TEXT NOT NULL,
+            room TEXT,
+            UNIQUE(day, lesson_num)
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def load_grades():
+    conn = sqlite3.connect(baze)
+    rows = conn.execute('SELECT id, full_name, subject, grade_date, grade FROM grades').fetchall()
+    conn.close()
+    return rows
+
+
+def insert_grade(full_name, subject, grade_date, grade):
+    conn = sqlite3.connect(baze)
+    conn.execute('INSERT INTO grades (full_name, subject, grade_date, grade) VALUES (?, ?, ?, ?)', (full_name, subject, grade_date, grade))
+    conn.commit()
+    conn.close()
+
+
+def update_grade(grade_id, column, value):
+    conn = sqlite3.connect(baze)
+    conn.execute(f'UPDATE grades SET {column} = ? WHERE id = ?', (value, grade_id))
+    conn.commit()
+    conn.close()
+
+
+def delete_grade(grade_id):
+    conn = sqlite3.connect(baze)
+    conn.execute('DELETE FROM grades WHERE id = ?', (grade_id,))
+    conn.commit()
+    conn.close()
+
+
+def load_schedule():
+    conn = sqlite3.connect(baze)
+    rows = conn.execute('SELECT day, lesson_num, subject, room FROM schedule').fetchall()
+    conn.close()
+    return rows
+
+
+def upsert_lesson(day, lesson_num, subject, room):
+    conn = sqlite3.connect(baze)
+    conn.execute('''
+        INSERT INTO schedule (day, lesson_num, subject, room)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(day, lesson_num)
+        DO UPDATE SET subject = excluded.subject, room = excluded.room
+    ''', (day, lesson_num, subject, room))
+    conn.commit()
+    conn.close()
+
+
+def delete_lesson(day, lesson_num):
+    conn = sqlite3.connect(baze)
+    conn.execute('DELETE FROM schedule WHERE day = ? AND lesson_num = ?', (day, lesson_num))
+    conn.commit()
+    conn.close()
+
+
+class GradesWindow(QWidget):
+    col_names = {1: 'full_name', 2: 'subject', 3: 'grade_date', 4: 'grade'}
+    def __init__(self, on_back=None):
+        super().__init__()
+        uic.loadUi(ui_gr, self)
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels(['ID', 'ФИО', 'Предмет', 'Дата', 'Оценка'])
+        self.table.setColumnHidden(0, True)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.DoubleClicked)
+        self.add_button.clicked.connect(self.on_add_clicked)
+        self.delete_button.clicked.connect(self.on_delete_clicked)
+        if on_back:
+            self.back_button.clicked.connect(on_back)
+        else:
+            self.back_button.clicked.connect(self.close)
+        self.table.itemChanged.connect(self.on_item_changed)
+        self.refresh_table()
+
+    def refresh_table(self):
+        self.table.blockSignals(True)
+        self.table.setRowCount(0)
+        records = load_grades()
+        self.table.setRowCount(len(records))
+        for i, record in enumerate(records):
+            for j, value in enumerate(record):
+                item = QTableWidgetItem(str(value))
+                if j in (0, 3, 4):
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.table.setItem(i, j, item)
+        self.table.resizeColumnsToContents()
+        self.table.blockSignals(False)
+
+    def on_add_clicked(self):
+        full_name = self.name_input.text()
+        subject = self.subject_input.text()
+        grade_date = self.date_input.text()
+        grade_text = self.grade_input.text()
+        if not full_name or not subject or not grade_date:
+            QMessageBox.warning(self, 'Ошибка', 'Заполните ФИО, предмет и дату.')
+            return
+        if not grade_text.isdigit() or not 2 <= int(grade_text) <= 5:
+            QMessageBox.warning(self, 'Ошибка', 'Оценка должна быть числом от 2 до 5.')
+            return
+        insert_grade(full_name, subject, grade_date, int(grade_text))
+        self.name_input.clear()
+        self.subject_input.clear()
+        self.date_input.clear()
+        self.grade_input.clear()
+        self.refresh_table()
+
+    def on_delete_clicked(self):
+        row = self.table.currentRow()
+        if row < 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите запись в таблице.')
+            return
+        grade_id = int(self.table.item(row, 0).text())
+        answer = QMessageBox.question(self, 'Подтверждение', 'Удалить выбранную оценку?', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if answer == QMessageBox.StandardButton.Yes:
+            delete_grade(grade_id)
+            self.refresh_table()
+
+    def on_item_changed(self, item):
+        row, column = item.row(), item.column()
+        if column == 0:
+            return
+        grade_id = int(self.table.item(row, 0).text())
+        column_name = self.col_names[column]
+        new_value = item.text()
+        if column_name == 'grade':
+            if not new_value.isdigit() or not 2 <= int(new_value) <= 5:
+                QMessageBox.warning(self, 'Ошибка', 'Оценка должна быть числом от 2 до 5.')
+                self.refresh_table()
+                return
+            new_value = int(new_value)
+        update_grade(grade_id, column_name, new_value)
+
+
+class AddLessonWindow(QDialog, Ui_AddLesson):
+    def __init__(self, schedule_window, day=None, lesson_num=None):
+        super().__init__()
+        self.setupUi(self)
+        self.schedule_window = schedule_window
+        self.combo_day.addItems(days)
+        for i in range(1, 9):
+            self.combo_lesson.addItem(f'{i} урок')
+        self.btn_save.clicked.connect(self.save_lesson)
+        self.btn_cancel.clicked.connect(self.reject)
+        if day is not None:
+            self.combo_day.setCurrentText(day)
+        if lesson_num is not None:
+            self.combo_lesson.setCurrentIndex(lesson_num - 1)
+
+    def save_lesson(self):
+        subject = self.line_subject.text()
+        room = self.line_room.text()
+        if not subject:
+            QMessageBox.warning(self, 'Ошибка', 'Введите предмет.')
+            return
+        day = self.combo_day.currentText()
+        lesson_num = self.combo_lesson.currentIndex() + 1
+        upsert_lesson(day, lesson_num, subject, room)
+        self.schedule_window.refresh_schedule()
+        self.accept()
+
+
+class SubWindow(QMainWindow):
+    def __init__(self, ui_class, title, main_menu, with_schedule=False):
+        super().__init__()
+        self.ui = ui_class()
+        self.ui.setupUi(self)
+        self.setWindowTitle(title)
+        self.main_menu = main_menu
+        self.ui.btn_back.clicked.connect(self.go_back)
+        if with_schedule:
+            self.setup_schedule_table()
+            self.ui.btn_add_lesson.clicked.connect(self.open_add_lesson)
+            self.ui.tableWidget.cellDoubleClicked.connect(self.on_cell_double_clicked)
+            self.refresh_schedule()
+
+    def setup_schedule_table(self):
+        table = self.ui.tableWidget
+        table.setHorizontalHeaderLabels(days)
+        lessons = []
+        for i in range(1, 9):
+            lessons.append(f'{i} урок')
+        table.setVerticalHeaderLabels(lessons)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
+    def refresh_schedule(self):
+        table = self.ui.tableWidget
+        table.blockSignals(True)
+        table.clearContents()
+        for day, lesson_num, subject, room in load_schedule():
+            col = days.index(day)
+            row = lesson_num - 1
+            if 0 <= row < table.rowCount():
+                text = f'{subject} (каб. {room})' if room else subject
+                table.setItem(row, col, QTableWidgetItem(text))
+        table.blockSignals(False)
+
+    def open_add_lesson(self):
+        AddLessonWindow(self).exec()
+
+    def on_cell_double_clicked(self, row, col):
+        day = days[col]
+        lesson_num = row + 1
+        dlg = AddLessonWindow(self, day=day, lesson_num=lesson_num)
+        item = self.ui.tableWidget.item(row, col)
+        if item:
+            text = item.text()
+            if ' (каб. ' in text:
+                subject, room_part = text.split(' (каб. ', 1)
+                room = room_part.rstrip(')')
+            else:
+                subject, room = text, ''
+            dlg.line_subject.setText(subject)
+            dlg.line_room.setText(room)
+        dlg.exec()
+
+    def go_back(self):
+        self.main_menu.show()
+        self.close()
+
 
 class MainMenuWindow(QMainWindow, Ui_MainMenu):
     def __init__(self):
@@ -18,97 +271,39 @@ class MainMenuWindow(QMainWindow, Ui_MainMenu):
         self.btn_homework.clicked.connect(self.open_homework)
         self.btn_reports.clicked.connect(self.open_reports)
         self.btn_settings.clicked.connect(self.open_settings)
+        self._child = None
+
+    def open_ch(self, window):
+        if self._child:
+            self._child.close()
+        self._child = window
+        window.show()
+        self.hide()
+
+    def return_menu(self):
+        if self._child:
+            self._child.close()
+            self._child = None
+        self.show()
 
     def open_schedule(self):
-        self.schedule_window = SubWindow(Ui_Schedule, 'Расписание')
-        self.schedule_window.show()
-        self.close()
+        self.open_ch(SubWindow(Ui_Schedule, 'Расписание', self, with_schedule=True))
 
     def open_scores(self):
-        self.scores_window = SubWindow(Ui_Scores, 'Оценки')
-        self.scores_window.show()
-        self.close()
+        self.open_ch(GradesWindow(on_back=self.return_menu))
 
     def open_homework(self):
-        self.homework_window = SubWindow(Ui_Homework, 'Домашнее задание')
-        self.homework_window.show()
-        self.close()
+        self.open_ch(SubWindow(Ui_Homework, 'Домашнее задание', self))
 
     def open_reports(self):
-        self.reports_window = SubWindow(Ui_Reports, 'Отчёты')
-        self.reports_window.show()
-        self.close()
+        self.open_ch(SubWindow(Ui_Reports, 'Отчёты', self))
 
     def open_settings(self):
-        self.settings_window = SubWindow(Ui_Settings, 'Настройки')
-        self.settings_window.show()
-        self.close()
-
-
-class AddLessonWindow(QDialog, Ui_AddLesson):
-    def __init__(self, schedule_window):
-        super().__init__()
-        self.setupUi(self)
-        self.schedule_window = schedule_window
-        self.combo_day.addItems(['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'])
-        self.combo_lesson.addItems(['1 урок', '2 урок', '3 урок', '4 урок', '5 урок', '6 урок', '7 урок', '8 урок'])
-        self.btn_save.clicked.connect(self.save_lesson)
-        self.btn_cancel.clicked.connect(self.reject)
-
-    def save_lesson(self):
-        day_index = self.combo_day.currentIndex()
-        lesson_index = self.combo_lesson.currentIndex()
-        subject = self.line_subject.text()
-        room = self.line_room.text()
-        if not subject:
-            return 
-        cell_text = subject
-        if room:
-            cell_text = f'{subject} (каб. {room})'
-        table = self.schedule_window.ui.tableWidget
-        table.setItem(lesson_index, day_index, QTableWidgetItem(cell_text))
-        self.close()
-
-
-class SubWindow(QMainWindow):
-    def __init__(self, ui_class, title):
-        super().__init__()
-        self.ui = ui_class()
-        self.ui.setupUi(self)
-        self.setWindowTitle(title)
-        self.ui.btn_back.clicked.connect(self.go_back)
-        if title == 'Расписание':
-            self.setup_schedule_table()
-            self.ui.btn_add_lesson.clicked.connect(self.open_add_lesson)
-
-    def setup_schedule_table(self):
-        table = self.ui.tableWidget
-        days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
-        table.setHorizontalHeaderLabels(days)
-        lessons = ['1 урок', '2 урок', '3 урок', '4 урок', '5 урок', '6 урок', '7 урок', '8 урок']
-        table.setVerticalHeaderLabels(lessons)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        schedule_data = [
-            ['Математика', 'Русский язык', 'Физика', 'История', 'Английский', ''],
-            ['Литература','Математика', 'Химия', 'Физкультура', 'Биология', ''],
-        ]
-        for i, j in enumerate(schedule_data):
-            for k, r in enumerate(j):
-                if r:
-                    table.setItem(i, k, QTableWidgetItem(r))
-        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-
-    def open_add_lesson(self):
-        self.add_lesson_dialog = AddLessonWindow(self)
-        self.add_lesson_dialog.exec()
-
-    def go_back(self):
-        self.menu = MainMenuWindow()
-        self.menu.show()
-        self.close()
+        self.open_ch(SubWindow(Ui_Settings, 'Настройки', self))
 
 
 if __name__ == '__main__':
+    create_database()
     app = QApplication(sys.argv)
     window = MainMenuWindow()
     window.show()
