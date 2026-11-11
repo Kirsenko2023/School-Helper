@@ -1,12 +1,16 @@
 import os
 import sys
 import sqlite3
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDialog, QMessageBox, QTableWidget
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QTableWidgetItem, QHeaderView,
+    QAbstractItemView, QDialog, QMessageBox, QTableWidget,
+    QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QPlainTextEdit
+)
 from PyQt6.QtCore import Qt
 from PyQt6 import uic
 from ui_main_menu import Ui_MainWindow as Ui_MainMenu
 from ui_schedule import Ui_MainWindow as Ui_Schedule
-from ui_homework import Ui_MainWindow as Ui_Homework
+from ui_homework import Ui_HomeworkWindow as Ui_Homework
 from ui_reports import Ui_MainWindow as Ui_Reports
 from ui_settings import Ui_MainWindow as Ui_Settings
 from ui_add_lesson import Ui_Form as Ui_AddLesson
@@ -16,6 +20,246 @@ baze = 'grades.db'
 ui_gr = 'grades_window.ui'
 allowed = {'full_name', 'subject', 'grade_date', 'grade'}
 days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+lesson_count = 8
+
+
+bw_style = """
+/* ===== Общий фон и шрифт ===== */
+QWidget {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 13px;
+}
+
+QMainWindow, QDialog {
+    background-color: #2b2b2b;
+}
+
+/* ===== Кнопки ===== */
+QPushButton {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border: 1px solid #888888;
+    border-radius: 4px;
+    padding: 6px 14px;
+    min-height: 20px;
+}
+QPushButton:hover {
+    background-color: #ffffff;
+    color: #2b2b2b;
+    border: 1px solid #ffffff;
+}
+QPushButton:pressed {
+    background-color: #dddddd;
+    color: #111111;
+}
+QPushButton:disabled {
+    background-color: #2f2f2f;
+    color: #777777;
+    border-color: #444444;
+}
+
+/* ===== Поля ввода ===== */
+QLineEdit, QPlainTextEdit, QTextEdit {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid #888888;
+    border-radius: 4px;
+    padding: 4px 6px;
+    selection-background-color: #ffffff;
+    selection-color: #2b2b2b;
+}
+QLineEdit:focus, QPlainTextEdit:focus, QTextEdit:focus {
+    border: 2px solid #ffffff;
+    padding: 3px 5px;
+}
+QLineEdit:disabled, QPlainTextEdit:disabled {
+    background-color: #2a2a2a;
+    color: #777777;
+    border-color: #444444;
+}
+
+/* ===== Выпадающие списки ===== */
+QComboBox {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid #888888;
+    border-radius: 4px;
+    padding: 4px 8px;
+    min-height: 20px;
+}
+QComboBox:hover {
+    background-color: #3a3a3a;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+QComboBox::down-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #ffffff;
+    width: 0;
+    height: 0;
+    margin-right: 6px;
+}
+QComboBox QAbstractItemView {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    selection-background-color: #ffffff;
+    selection-color: #2b2b2b;
+    outline: none;
+}
+
+/* ===== Таблицы ===== */
+QTableWidget, QTableView {
+    background-color: #1e1e1e;
+    alternate-background-color: #262626;
+    color: #ffffff;
+    gridline-color: #555555;
+    border: 1px solid #888888;
+    border-radius: 4px;
+    selection-background-color: #ffffff;
+    selection-color: #2b2b2b;
+    outline: none;
+}
+QTableWidget::item, QTableView::item {
+    padding: 4px;
+    border: none;
+}
+QTableWidget::item:selected, QTableView::item:selected {
+    background-color: #ffffff;
+    color: #2b2b2b;
+}
+QHeaderView::section {
+    background-color: #111111;
+    color: #ffffff;
+    padding: 6px;
+    border: 1px solid #555555;
+    font-weight: bold;
+}
+QTableCornerButton::section {
+    background-color: #111111;
+    border: 1px solid #555555;
+}
+
+/* ===== Скроллбары ===== */
+QScrollBar:vertical {
+    background-color: #1e1e1e;
+    width: 12px;
+    margin: 0;
+    border: none;
+}
+QScrollBar::handle:vertical {
+    background-color: #888888;
+    min-height: 20px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background-color: #ffffff;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+    background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: #1e1e1e;
+}
+QScrollBar:horizontal {
+    background-color: #1e1e1e;
+    height: 12px;
+    margin: 0;
+    border: none;
+}
+QScrollBar::handle:horizontal {
+    background-color: #888888;
+    min-width: 20px;
+    border-radius: 4px;
+}
+QScrollBar::handle:horizontal:hover {
+    background-color: #ffffff;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0;
+    background: none;
+}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: #1e1e1e;
+}
+
+/* ===== Метки ===== */
+QLabel {
+    background-color: transparent;
+    color: #ffffff;
+}
+
+/* ===== Меню и статусбар ===== */
+QMenuBar {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border-bottom: 1px solid #555555;
+}
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 10px;
+}
+QMenuBar::item:selected {
+    background-color: #ffffff;
+    color: #2b2b2b;
+}
+QMenu {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+}
+QMenu::item:selected {
+    background-color: #ffffff;
+    color: #2b2b2b;
+}
+QStatusBar {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border-top: 1px solid #555555;
+}
+
+/* ===== Диалоги сообщений ===== */
+QMessageBox {
+    background-color: #2b2b2b;
+}
+QMessageBox QLabel {
+    color: #ffffff;
+}
+QMessageBox QPushButton {
+    min-width: 80px;
+}
+
+/* ===== Тултипы ===== */
+QToolTip {
+    background-color: #111111;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 4px;
+}
+
+/* ===== Чекбоксы и радиокнопки ===== */
+QCheckBox, QRadioButton {
+    background-color: transparent;
+    color: #ffffff;
+    spacing: 6px;
+}
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #ffffff;
+    background-color: #1e1e1e;
+}
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background-color: #ffffff;
+}
+"""
 
 
 def create_database():
@@ -39,6 +283,15 @@ def create_database():
             UNIQUE(day, lesson_num)
         )
     ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS homework (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT NOT NULL,
+            day TEXT NOT NULL,
+            task TEXT NOT NULL,
+            UNIQUE(subject, day)
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -52,7 +305,7 @@ def load_grades():
 
 def insert_grade(full_name, subject, grade_date, grade):
     conn = sqlite3.connect(baze)
-    conn.execute('INSERT INTO grades (full_name, subject, grade_date, grade) VALUES (?, ?, ?, ?)', (full_name, subject, grade_date, grade))
+    conn.execute('INSERT INTO grades (full_name, subject, grade_date, grade) VALUES (?, ?, ?, ?)',(full_name, subject, grade_date, grade))
     conn.commit()
     conn.close()
 
@@ -97,13 +350,53 @@ def delete_lesson(day, lesson_num):
     conn.close()
 
 
+def load_homework_subjects():
+    conn = sqlite3.connect(baze)
+    rows = conn.execute('SELECT DISTINCT subject FROM schedule ORDER BY subject').fetchall()
+    conn.close()
+    subjects = []
+    for (subject,) in rows:
+        subjects.append(subject)
+    return subjects
+
+
+def load_homework():
+    conn = sqlite3.connect(baze)
+    rows = conn.execute('SELECT id, subject, day, task FROM homework').fetchall()
+    conn.close()
+    result = {}
+    for hw_id, subject, day, task in rows:
+        result[(subject, day)] = (hw_id, task)
+    return result
+
+
+def upsert_homework(subject, day, task):
+    conn = sqlite3.connect(baze)
+    conn.execute('''
+        INSERT INTO homework (subject, day, task)
+        VALUES (?, ?, ?)
+        ON CONFLICT(subject, day)
+        DO UPDATE SET task = excluded.task
+    ''', (subject, day, task))
+    conn.commit()
+    conn.close()
+
+
+def delete_homework(subject, day):
+    conn = sqlite3.connect(baze)
+    conn.execute('DELETE FROM homework WHERE subject = ? AND day = ?', (subject, day))
+    conn.commit()
+    conn.close()
+
+
 class GradesWindow(QWidget):
-    col_names = {1: 'full_name', 2: 'subject', 3: 'grade_date', 4: 'grade'}
+    col_names = {1: 'subject', 2: 'grade_date', 3: 'grade'}
+
     def __init__(self, on_back=None):
         super().__init__()
         uic.loadUi(ui_gr, self)
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(['ID', 'ФИО', 'Предмет', 'Дата', 'Оценка'])
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(['ID', 'Предмет', 'Дата', 'Оценка'])
         self.table.setColumnHidden(0, True)
         self.table.setEditTriggers(QTableWidget.EditTrigger.DoubleClicked)
         self.add_button.clicked.connect(self.on_add_clicked)
@@ -120,28 +413,27 @@ class GradesWindow(QWidget):
         self.table.setRowCount(0)
         records = load_grades()
         self.table.setRowCount(len(records))
-        for i, record in enumerate(records):
-            for j, value in enumerate(record):
+        for i, (gid, _full_name, subject, grade_date, grade) in enumerate(records):
+            values = [gid, subject, grade_date, grade]
+            for j, value in enumerate(values):
                 item = QTableWidgetItem(str(value))
-                if j in (0, 3, 4):
+                if j in (0, 2, 3):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.table.setItem(i, j, item)
         self.table.resizeColumnsToContents()
         self.table.blockSignals(False)
 
     def on_add_clicked(self):
-        full_name = self.name_input.text()
         subject = self.subject_input.text()
         grade_date = self.date_input.text()
         grade_text = self.grade_input.text()
-        if not full_name or not subject or not grade_date:
-            QMessageBox.warning(self, 'Ошибка', 'Заполните ФИО, предмет и дату.')
+        if not subject or not grade_date:
+            QMessageBox.warning(self, 'Ошибка', 'Заполните предмет и дату.')
             return
         if not grade_text.isdigit() or not 2 <= int(grade_text) <= 5:
             QMessageBox.warning(self, 'Ошибка', 'Оценка должна быть числом от 2 до 5.')
             return
-        insert_grade(full_name, subject, grade_date, int(grade_text))
-        self.name_input.clear()
+        insert_grade('Ученик', subject, grade_date, int(grade_text))
         self.subject_input.clear()
         self.date_input.clear()
         self.grade_input.clear()
@@ -159,9 +451,8 @@ class GradesWindow(QWidget):
             self.refresh_table()
 
     def on_item_changed(self, item):
-        row, column = item.row(), item.column()
-        if column == 0:
-            return
+        row = item.row()
+        column = item.column()
         grade_id = int(self.table.item(row, 0).text())
         column_name = self.col_names[column]
         new_value = item.text()
@@ -180,7 +471,7 @@ class AddLessonWindow(QDialog, Ui_AddLesson):
         self.setupUi(self)
         self.schedule_window = schedule_window
         self.combo_day.addItems(days)
-        for i in range(1, 9):
+        for i in range(1, lesson_count + 1):
             self.combo_lesson.addItem(f'{i} урок')
         self.btn_save.clicked.connect(self.save_lesson)
         self.btn_cancel.clicked.connect(self.reject)
@@ -202,8 +493,90 @@ class AddLessonWindow(QDialog, Ui_AddLesson):
         self.accept()
 
 
+class HomeworkDialog(QDialog):
+    def __init__(self, parent=None, subject='', day='', task=''):
+        super().__init__(parent)
+        self.setWindowTitle(f'Домашнее задание — {subject} ({day})')
+        self.resize(600, 400)
+        self.subject = subject
+        self.day = day
+        layout = QVBoxLayout(self)
+        header = QLabel(
+            f'<b style="font-size:15px; color:#ffffff;">{subject}</b><br>'
+            f'<span style="color:#aaaaaa;">{day}</span>'
+        )
+        header.setWordWrap(True)
+        layout.addWidget(header)
+        self.editor = QPlainTextEdit()
+        self.editor.setPlaceholderText('Введите домашнее задание...')
+        self.editor.setPlainText(task)
+        layout.addWidget(self.editor, 1)
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        self.btn_save = QPushButton('Сохранить')
+        self.btn_delete = QPushButton('Удалить')
+        self.btn_cancel = QPushButton('Отмена')
+        btn_layout.addWidget(self.btn_delete)
+        btn_layout.addWidget(self.btn_cancel)
+        btn_layout.addWidget(self.btn_save)
+        layout.addLayout(btn_layout)
+        self.btn_save.clicked.connect(self.save)
+        self.btn_cancel.clicked.connect(self.reject)
+        self.btn_delete.clicked.connect(self.delete)
+        self.btn_save.setObjectName('btn_save')
+        self.btn_delete.setObjectName('btn_delete')
+        self.btn_save.setStyleSheet("""
+            QPushButton {
+                background-color: #111111;
+                color: #ffffff;
+                border: 1px solid #ffffff;
+                font-weight: bold;
+                border-radius: 4px;
+                padding: 6px 14px;
+            }
+            QPushButton:hover {
+                background-color: #ffffff;
+                color: #111111;
+            }
+            QPushButton:pressed {
+                background-color: #dddddd;
+                color: #111111;
+            }
+        """)
+
+        self.btn_delete.setStyleSheet("""
+            QPushButton {
+                background-color: #2b2b2b;
+                color: #ffffff;
+                border: 2px solid #ffffff;
+                font-weight: bold;
+                border-radius: 4px;
+                padding: 5px 13px;
+            }
+            QPushButton:hover {
+                background-color: #ffffff;
+                color: #2b2b2b;
+            }
+        """)
+
+    def save(self):
+        task = self.editor.toPlainText()
+        if not task:
+            QMessageBox.warning(self, 'Ошибка', 'Задание не может быть пустым.')
+            return
+        upsert_homework(self.subject, self.day, task)
+        self.accept()
+
+    def delete(self):
+        answer = QMessageBox.question(self, 'Подтверждение', f'Удалить ДЗ по предмету «{self.subject}» на {self.day}?', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if answer == QMessageBox.StandardButton.Yes:
+            delete_homework(self.subject, self.day)
+            self.accept()
+
+
 class SubWindow(QMainWindow):
-    def __init__(self, ui_class, title, main_menu, with_schedule=False):
+    def __init__(self, ui_class, title, main_menu,
+                 with_schedule=False, with_homework=False):
         super().__init__()
         self.ui = ui_class()
         self.ui.setupUi(self)
@@ -213,16 +586,23 @@ class SubWindow(QMainWindow):
         if with_schedule:
             self.setup_schedule_table()
             self.ui.btn_add_lesson.clicked.connect(self.open_add_lesson)
+            self.ui.btn_delete_lesson.clicked.connect(self.delete_selected_lesson)
             self.ui.tableWidget.cellDoubleClicked.connect(self.on_cell_double_clicked)
             self.refresh_schedule()
+        if with_homework:
+            self.setup_homework_table()
+            self.ui.btn_add_homework.clicked.connect(self.on_homework_add_clicked)
+            self.ui.btn_delete_homework.clicked.connect(self.on_homework_delete_clicked)
+            self.ui.tableWidget.cellDoubleClicked.connect(self.on_homework_double_clicked)
+            self.refresh_homework()
 
     def setup_schedule_table(self):
         table = self.ui.tableWidget
         table.setHorizontalHeaderLabels(days)
-        lessons = []
-        for i in range(1, 9):
-            lessons.append(f'{i} урок')
-        table.setVerticalHeaderLabels(lessons)
+        lesson_labels = []
+        for i in range(1, lesson_count + 1):
+            lesson_labels.append(f'{i} урок')
+        table.setVerticalHeaderLabels(lesson_labels)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
@@ -234,12 +614,28 @@ class SubWindow(QMainWindow):
             col = days.index(day)
             row = lesson_num - 1
             if 0 <= row < table.rowCount():
-                text = f'{subject} (каб. {room})' if room else subject
+                if room:
+                    text = f'{subject} (каб. {room})'
+                else:
+                    text = subject
                 table.setItem(row, col, QTableWidgetItem(text))
         table.blockSignals(False)
 
     def open_add_lesson(self):
         AddLessonWindow(self).exec()
+
+    def delete_selected_lesson(self):
+        row = self.ui.tableWidget.currentRow()
+        col = self.ui.tableWidget.currentColumn()
+        if row < 0 or col < 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите урок в таблице.')
+            return
+        day = days[col]
+        lesson_num = row + 1
+        answer = QMessageBox.question(self, 'Подтверждение', f'Удалить урок {lesson_num} ({day})?', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if answer == QMessageBox.StandardButton.Yes:
+            delete_lesson(day, lesson_num)
+            self.refresh_schedule()
 
     def on_cell_double_clicked(self, row, col):
         day = days[col]
@@ -257,6 +653,79 @@ class SubWindow(QMainWindow):
             dlg.line_room.setText(room)
         dlg.exec()
 
+    def setup_homework_table(self):
+        table = self.ui.tableWidget
+        table.setHorizontalHeaderLabels(days)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setWordWrap(True)
+
+    def refresh_homework(self):
+        table = self.ui.tableWidget
+        table.blockSignals(True)
+        table.clearContents()
+        subjects = load_homework_subjects()
+        table.setRowCount(len(subjects))
+        table.setVerticalHeaderLabels(subjects)
+        hw = load_homework()
+        for row, subject in enumerate(subjects):
+            for col, day in enumerate(days):
+                entry = hw.get((subject, day))
+                if entry and entry[1]:
+                    item = QTableWidgetItem(entry[1])
+                    item.setToolTip(entry[1])
+                else:
+                    item = QTableWidgetItem('')
+                    item.setForeground(Qt.GlobalColor.gray)
+                table.setItem(row, col, item)
+        table.blockSignals(False)
+
+    def selected_homework_cell(self):
+        row = self.ui.tableWidget.currentRow()
+        col = self.ui.tableWidget.currentColumn()
+        if row < 0 or col < 0:
+            QMessageBox.warning(self, 'Ошибка', 'Выберите ячейку в таблице.')
+            return None
+        subject = self.ui.tableWidget.verticalHeaderItem(row).text()
+        day = days[col]
+        item = self.ui.tableWidget.item(row, col)
+        if item:
+            task = item.text()
+        else:
+            task = ''
+        return subject, day, task
+
+    def on_homework_add_clicked(self):
+        cell = self.selected_homework_cell()
+        subject, day, task = cell
+        dlg = HomeworkDialog(self, subject=subject, day=day, task=task)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self.refresh_homework()
+
+    def on_homework_delete_clicked(self):
+        cell = self.selected_homework_cell()
+        subject, day, task = cell
+        if not task:
+            QMessageBox.information(self, 'Инфо', 'В этой ячейке нет задания.')
+            return
+        answer = QMessageBox.question(self, 'Подтверждение', f'Удалить ДЗ по предмету «{subject}» на {day}?', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if answer == QMessageBox.StandardButton.Yes:
+            delete_homework(subject, day)
+            self.refresh_homework()
+
+    def on_homework_double_clicked(self, row, col):
+        subject = self.ui.tableWidget.verticalHeaderItem(row).text()
+        day = days[col]
+        item = self.ui.tableWidget.item(row, col)
+        if item:
+            task = item.text()
+        else:
+            task = ''
+        dlg = HomeworkDialog(self, subject=subject, day=day, task=task)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self.refresh_homework()
+
     def go_back(self):
         self.main_menu.show()
         self.close()
@@ -271,19 +740,19 @@ class MainMenuWindow(QMainWindow, Ui_MainMenu):
         self.btn_homework.clicked.connect(self.open_homework)
         self.btn_reports.clicked.connect(self.open_reports)
         self.btn_settings.clicked.connect(self.open_settings)
-        self._child = None
+        self.child = None
 
     def open_ch(self, window):
-        if self._child:
-            self._child.close()
-        self._child = window
+        if self.child:
+            self.child.close()
+        self.child = window
         window.show()
         self.hide()
 
     def return_menu(self):
-        if self._child:
-            self._child.close()
-            self._child = None
+        if self.child:
+            self.child.close()
+            self.child = None
         self.show()
 
     def open_schedule(self):
@@ -293,7 +762,7 @@ class MainMenuWindow(QMainWindow, Ui_MainMenu):
         self.open_ch(GradesWindow(on_back=self.return_menu))
 
     def open_homework(self):
-        self.open_ch(SubWindow(Ui_Homework, 'Домашнее задание', self))
+        self.open_ch(SubWindow(Ui_Homework, 'Домашнее задание', self, with_homework=True))
 
     def open_reports(self):
         self.open_ch(SubWindow(Ui_Reports, 'Отчёты', self))
@@ -305,6 +774,7 @@ class MainMenuWindow(QMainWindow, Ui_MainMenu):
 if __name__ == '__main__':
     create_database()
     app = QApplication(sys.argv)
+    app.setStyleSheet(bw_style)
     window = MainMenuWindow()
     window.show()
     sys.exit(app.exec())

@@ -52,7 +52,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.btn_schedule.setText(_translate("MainWindow", "Расписание"))
-        self.btn_scores.setText(_translate("MainWindow", "Домашнее задание"))
-        self.btn_homework.setText(_translate("MainWindow", "Оценки"))
+        self.btn_scores.setText(_translate("MainWindow", "Оценки"))
+        self.btn_homework.setText(_translate("MainWindow", "Домашнее задание"))
         self.btn_reports.setText(_translate("MainWindow", "Отчеты"))
         self.btn_settings.setText(_translate("MainWindow", "Настройка"))

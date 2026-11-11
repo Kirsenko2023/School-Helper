@@ -34,14 +34,14 @@
      <item>
       <widget class="QPushButton" name="btn_scores">
        <property name="text">
-        <string>Домашнее задание</string>
+        <string>Оценки</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btn_homework">
        <property name="text">
-        <string>Оценки</string>
+        <string>Домашнее задание</string>
        </property>
       </widget>
      </item>

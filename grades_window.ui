@@ -17,13 +17,6 @@
    <item>
     <layout class="QHBoxLayout" name="inputLayout">
      <item>
-      <widget class="QLineEdit" name="name_input">
-       <property name="placeholderText">
-        <string>ФИО ученика</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QLineEdit" name="subject_input">
        <property name="placeholderText">
         <string>Предмет</string>
