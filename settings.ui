@@ -11,33 +11,132 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Настройки</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="btn_back">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>880</y>
-      <width>101</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Назад</string>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="leftMargin"><number>20</number></property>
+    <property name="topMargin"><number>20</number></property>
+    <property name="rightMargin"><number>20</number></property>
+    <property name="bottomMargin"><number>20</number></property>
+    <item>
+     <widget class="QLabel" name="title_label">
+      <property name="text"><string>Настройки</string></property>
+      <property name="alignment"><set>Qt::AlignCenter</set></property>
+      <property name="styleSheet"><string notr="true">font-size: 22px; font-weight: bold; padding: 8px;</string></property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="group_student">
+      <property name="title"><string>Данные ученика</string></property>
+      <layout class="QFormLayout" name="form_student">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_name">
+         <property name="text"><string>ФИО ученика:</string></property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="line_student_name">
+         <property name="placeholderText"><string>Иванов Иван Иванович</string></property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_class">
+         <property name="text"><string>Класс:</string></property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="line_student_class">
+         <property name="placeholderText"><string>10А</string></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="group_appearance">
+      <property name="title"><string>Внешний вид</string></property>
+      <layout class="QFormLayout" name="form_appearance">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_theme">
+         <property name="text"><string>Тема оформления:</string></property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="combo_theme"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_font_size">
+         <property name="text"><string>Размер шрифта:</string></property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="spin_font_size">
+         <property name="minimum"><number>9</number></property>
+         <property name="maximum"><number>20</number></property>
+         <property name="value"><number>13</number></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="group_schedule">
+      <property name="title"><string>Расписание</string></property>
+      <layout class="QFormLayout" name="form_schedule">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_lesson_count">
+         <property name="text"><string>Количество уроков в день:</string></property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="spin_lesson_count">
+         <property name="minimum"><number>1</number></property>
+         <property name="maximum"><number>12</number></property>
+         <property name="value"><number>8</number></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation"><enum>Qt::Vertical</enum></property>
+      <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+     </spacer>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="buttonsLayout">
+      <item>
+       <widget class="QPushButton" name="btn_save_settings">
+        <property name="text"><string>Сохранить настройки</string></property>
+        <property name="minimumHeight"><number>36</number></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_reset_settings">
+        <property name="text"><string>Сбросить по умолчанию</string></property>
+        <property name="minimumHeight"><number>36</number></property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="hSpacer">
+        <property name="orientation"><enum>Qt::Horizontal</enum></property>
+        <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_back">
+        <property name="text"><string>Назад</string></property>
+        <property name="minimumHeight"><number>36</number></property>
+        <property name="minimumWidth"><number>120</number></property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1000</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
+  <widget class="QMenuBar" name="menubar"/>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>

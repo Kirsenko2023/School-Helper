@@ -15,14 +15,127 @@ class Ui_MainWindow(object):
         MainWindow.resize(1000, 1000)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+
+        self.mainLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.mainLayout.setContentsMargins(20, 20, 20, 20)
+        self.mainLayout.setObjectName("mainLayout")
+
+        # Заголовок
+        self.title_label = QtWidgets.QLabel(parent=self.centralwidget)
+        self.title_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setStyleSheet("font-size: 22px; font-weight: bold; padding: 8px;")
+        self.title_label.setObjectName("title_label")
+        self.mainLayout.addWidget(self.title_label)
+
+        # Группа: данные ученика
+        self.group_student = QtWidgets.QGroupBox(parent=self.centralwidget)
+        self.group_student.setObjectName("group_student")
+        self.form_student = QtWidgets.QFormLayout(self.group_student)
+        self.form_student.setObjectName("form_student")
+
+        self.label_name = QtWidgets.QLabel(parent=self.group_student)
+        self.label_name.setObjectName("label_name")
+        self.form_student.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_name)
+        self.line_student_name = QtWidgets.QLineEdit(parent=self.group_student)
+        self.line_student_name.setObjectName("line_student_name")
+        self.form_student.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.line_student_name)
+
+        self.label_class = QtWidgets.QLabel(parent=self.group_student)
+        self.label_class.setObjectName("label_class")
+        self.form_student.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_class)
+        self.line_student_class = QtWidgets.QLineEdit(parent=self.group_student)
+        self.line_student_class.setObjectName("line_student_class")
+        self.form_student.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.line_student_class)
+
+        self.mainLayout.addWidget(self.group_student)
+
+        # Группа: внешний вид
+        self.group_appearance = QtWidgets.QGroupBox(parent=self.centralwidget)
+        self.group_appearance.setObjectName("group_appearance")
+        self.form_appearance = QtWidgets.QFormLayout(self.group_appearance)
+        self.form_appearance.setObjectName("form_appearance")
+
+        self.label_theme = QtWidgets.QLabel(parent=self.group_appearance)
+        self.label_theme.setObjectName("label_theme")
+        self.form_appearance.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_theme)
+        self.combo_theme = QtWidgets.QComboBox(parent=self.group_appearance)
+        self.combo_theme.setObjectName("combo_theme")
+        self.form_appearance.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.combo_theme)
+
+        self.label_font_size = QtWidgets.QLabel(parent=self.group_appearance)
+        self.label_font_size.setObjectName("label_font_size")
+        self.form_appearance.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_font_size)
+        self.spin_font_size = QtWidgets.QSpinBox(parent=self.group_appearance)
+        self.spin_font_size.setMinimum(9)
+        self.spin_font_size.setMaximum(20)
+        self.spin_font_size.setValue(13)
+        self.spin_font_size.setObjectName("spin_font_size")
+        self.form_appearance.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.spin_font_size)
+
+        self.mainLayout.addWidget(self.group_appearance)
+
+        # Группа: расписание
+        self.group_schedule = QtWidgets.QGroupBox(parent=self.centralwidget)
+        self.group_schedule.setObjectName("group_schedule")
+        self.form_schedule = QtWidgets.QFormLayout(self.group_schedule)
+        self.form_schedule.setObjectName("form_schedule")
+
+        self.label_lesson_count = QtWidgets.QLabel(parent=self.group_schedule)
+        self.label_lesson_count.setObjectName("label_lesson_count")
+        self.form_schedule.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_lesson_count)
+        self.spin_lesson_count = QtWidgets.QSpinBox(parent=self.group_schedule)
+        self.spin_lesson_count.setMinimum(1)
+        self.spin_lesson_count.setMaximum(12)
+        self.spin_lesson_count.setValue(8)
+        self.spin_lesson_count.setObjectName("spin_lesson_count")
+        self.form_schedule.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.spin_lesson_count)
+
+        self.mainLayout.addWidget(self.group_schedule)
+
+        # Растяжка
+        spacerItem = QtWidgets.QSpacerItem(
+            20, 40,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        self.mainLayout.addItem(spacerItem)
+
+        # Кнопки
+        self.buttonsLayout = QtWidgets.QHBoxLayout()
+        self.buttonsLayout.setSpacing(10)
+        self.buttonsLayout.setObjectName("buttonsLayout")
+
+        self.btn_save_settings = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.btn_save_settings.setMinimumHeight(36)
+        self.btn_save_settings.setObjectName("btn_save_settings")
+        self.buttonsLayout.addWidget(self.btn_save_settings)
+
+        self.btn_reset_settings = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.btn_reset_settings.setMinimumHeight(36)
+        self.btn_reset_settings.setObjectName("btn_reset_settings")
+        self.buttonsLayout.addWidget(self.btn_reset_settings)
+
+        spacerItem2 = QtWidgets.QSpacerItem(
+            40, 20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.buttonsLayout.addItem(spacerItem2)
+
         self.btn_back = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.btn_back.setGeometry(QtCore.QRect(20, 880, 101, 51))
+        self.btn_back.setMinimumHeight(36)
+        self.btn_back.setMinimumWidth(120)
         self.btn_back.setObjectName("btn_back")
+        self.buttonsLayout.addWidget(self.btn_back)
+
+        self.mainLayout.addLayout(self.buttonsLayout)
+
         MainWindow.setCentralWidget(self.centralwidget)
+
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1000, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
+
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
@@ -32,5 +145,18 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Настройки"))
+        self.title_label.setText(_translate("MainWindow", "Настройки"))
+        self.group_student.setTitle(_translate("MainWindow", "Данные ученика"))
+        self.label_name.setText(_translate("MainWindow", "ФИО ученика:"))
+        self.line_student_name.setPlaceholderText(_translate("MainWindow", "Иванов Иван Иванович"))
+        self.label_class.setText(_translate("MainWindow", "Класс:"))
+        self.line_student_class.setPlaceholderText(_translate("MainWindow", "10А"))
+        self.group_appearance.setTitle(_translate("MainWindow", "Внешний вид"))
+        self.label_theme.setText(_translate("MainWindow", "Тема оформления:"))
+        self.label_font_size.setText(_translate("MainWindow", "Размер шрифта:"))
+        self.group_schedule.setTitle(_translate("MainWindow", "Расписание"))
+        self.label_lesson_count.setText(_translate("MainWindow", "Количество уроков в день:"))
+        self.btn_save_settings.setText(_translate("MainWindow", "Сохранить настройки"))
+        self.btn_reset_settings.setText(_translate("MainWindow", "Сбросить по умолчанию"))
         self.btn_back.setText(_translate("MainWindow", "Назад"))

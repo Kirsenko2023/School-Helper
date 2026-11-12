@@ -1,11 +1,7 @@
 import os
 import sys
 import sqlite3
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QTableWidgetItem, QHeaderView,
-    QAbstractItemView, QDialog, QMessageBox, QTableWidget,
-    QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QPlainTextEdit
-)
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDialog, QMessageBox, QTableWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QPlainTextEdit
 from PyQt6.QtCore import Qt
 from PyQt6 import uic
 from ui_main_menu import Ui_MainWindow as Ui_MainMenu
@@ -24,7 +20,6 @@ lesson_count = 8
 
 
 bw_style = """
-/* ===== Общий фон и шрифт ===== */
 QWidget {
     background-color: #2b2b2b;
     color: #ffffff;
@@ -35,8 +30,6 @@ QWidget {
 QMainWindow, QDialog {
     background-color: #2b2b2b;
 }
-
-/* ===== Кнопки ===== */
 QPushButton {
     background-color: #3a3a3a;
     color: #ffffff;
@@ -59,8 +52,6 @@ QPushButton:disabled {
     color: #777777;
     border-color: #444444;
 }
-
-/* ===== Поля ввода ===== */
 QLineEdit, QPlainTextEdit, QTextEdit {
     background-color: #1e1e1e;
     color: #ffffff;
@@ -79,8 +70,6 @@ QLineEdit:disabled, QPlainTextEdit:disabled {
     color: #777777;
     border-color: #444444;
 }
-
-/* ===== Выпадающие списки ===== */
 QComboBox {
     background-color: #1e1e1e;
     color: #ffffff;
@@ -113,8 +102,6 @@ QComboBox QAbstractItemView {
     selection-color: #2b2b2b;
     outline: none;
 }
-
-/* ===== Таблицы ===== */
 QTableWidget, QTableView {
     background-color: #1e1e1e;
     alternate-background-color: #262626;
@@ -145,8 +132,6 @@ QTableCornerButton::section {
     background-color: #111111;
     border: 1px solid #555555;
 }
-
-/* ===== Скроллбары ===== */
 QScrollBar:vertical {
     background-color: #1e1e1e;
     width: 12px;
@@ -189,14 +174,10 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
     background: #1e1e1e;
 }
-
-/* ===== Метки ===== */
 QLabel {
     background-color: transparent;
     color: #ffffff;
 }
-
-/* ===== Меню и статусбар ===== */
 QMenuBar {
     background-color: #2b2b2b;
     color: #ffffff;
@@ -224,8 +205,6 @@ QStatusBar {
     color: #ffffff;
     border-top: 1px solid #555555;
 }
-
-/* ===== Диалоги сообщений ===== */
 QMessageBox {
     background-color: #2b2b2b;
 }
@@ -235,16 +214,12 @@ QMessageBox QLabel {
 QMessageBox QPushButton {
     min-width: 80px;
 }
-
-/* ===== Тултипы ===== */
 QToolTip {
     background-color: #111111;
     color: #ffffff;
     border: 1px solid #ffffff;
     padding: 4px;
 }
-
-/* ===== Чекбоксы и радиокнопки ===== */
 QCheckBox, QRadioButton {
     background-color: transparent;
     color: #ffffff;
@@ -575,8 +550,7 @@ class HomeworkDialog(QDialog):
 
 
 class SubWindow(QMainWindow):
-    def __init__(self, ui_class, title, main_menu,
-                 with_schedule=False, with_homework=False):
+    def __init__(self, ui_class, title, main_menu, with_schedule=False, with_homework=False):
         super().__init__()
         self.ui = ui_class()
         self.ui.setupUi(self)

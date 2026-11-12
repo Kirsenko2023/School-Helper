@@ -46,13 +46,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_reports">
-       <property name="text">
-        <string>Отчеты</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="btn_settings">
        <property name="text">
         <string>Настройка</string>
